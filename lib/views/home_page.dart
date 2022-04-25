@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:marcador_de_truco/models/player.dart';
 
@@ -16,7 +17,6 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     _resetPlayers();
-
   }
 
   void _resetPlayer({required Player player, bool resetVictories = true}) {
@@ -29,6 +29,27 @@ class _HomePageState extends State<HomePage> {
   void _resetPlayers({bool resetVictories = true}) {
     _resetPlayer(player: _playerOne, resetVictories: resetVictories);
     _resetPlayer(player: _playerTwo, resetVictories: resetVictories);
+  }
+
+  void _checkPlayerWin({required Player player}) {
+    if (player.score == 12) {
+      _showDialog(
+          title: "Fim de Jogo",
+          message: '${player.name} ganhou!',
+          confirm: () {
+            setState(() {
+              player.victories++;
+            });
+
+            _resetPlayers(resetVictories: false);
+          },
+          cancel: () {
+            setState(() {
+              player.score--;
+            });
+          }
+      );
+    }
   }
 
   @override
@@ -44,9 +65,7 @@ class _HomePageState extends State<HomePage> {
                 title: 'Zerar',
                 message:
                 'Tem certeza que deseja começar novamente a pontuação?',
-                confirm: () {
-                  _resetPlayers();
-                },
+                confirm: () {},
                 cancel: () {}
               );
             },
@@ -54,7 +73,7 @@ class _HomePageState extends State<HomePage> {
           )
         ],
       ),
-      body: Container(padding: const EdgeInsets.all(20.0), child: _showPlayers()),
+      body: _showPlayers(),
     );
   }
 
@@ -154,23 +173,7 @@ class _HomePageState extends State<HomePage> {
               player.score++;
             });
 
-            if (player.score == 12) {
-              _showDialog(
-                  title: 'Fim do jogo',
-                  message: '${player.name} ganhou!',
-                  confirm: () {
-                    setState(() {
-                      player.victories++;
-                    });
-
-                    _resetPlayers(resetVictories: false);
-                  },
-                  cancel: () {
-                    setState(() {
-                      player.score--;
-                    });
-                  });
-            }
+            _checkPlayerWin(player: player);
           },
         ),
       ],
@@ -181,6 +184,7 @@ class _HomePageState extends State<HomePage> {
       {required String title, required String message, required Function confirm, required Function cancel}) {
     showDialog(
       context: context,
+      barrierDismissible: false,
       builder: (BuildContext context) {
         return AlertDialog(
           title: Text(title),
